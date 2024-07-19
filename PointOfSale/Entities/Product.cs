@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using static System.Reflection.Metadata.BlobBuilder;
 
-namespace PointOfSale
+namespace PointOfSale.Data
 {
     public class Product
     {
@@ -24,5 +24,5 @@ namespace PointOfSale
         public required string category { get; set; }
     }
 
-  
+
 }

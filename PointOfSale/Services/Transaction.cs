@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PointOfSale.Data;
 
-namespace PointOfSale
+namespace PointOfSale.Services
 {
     public static class Transaction
     {

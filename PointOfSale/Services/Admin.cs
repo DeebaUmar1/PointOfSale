@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using PointOfSale.Data;
 
-namespace PointOfSale
+namespace PointOfSale.Services
 {
     public static class Admin
     {
-        public static void ShowAdminMenuMain()
+        public static void ShowAdminMenuMain(POSDbContext context)
         {
             while (true)
             {
@@ -26,13 +28,13 @@ namespace PointOfSale
                 switch (choice)
                 {
                     case "1":
-                        ShowAdminMenu();
+                        ShowAdminMenu(context);
                         break;
                     case "2":
-                        InventoryMenu();
+                        InventoryMenu(context);
                         break;
                     case "3":
-                        SetUserRole();
+                        SetUserRole(context);
                         break;
                     case "4":
                         return; // Exit the method and the loop
@@ -44,7 +46,7 @@ namespace PointOfSale
             }
         }
 
-        public static void ShowAdminMenu()
+        public static void ShowAdminMenu(POSDbContext context)
         {
             while (true)
             {
@@ -65,7 +67,7 @@ namespace PointOfSale
                 {
                     case "1":
                         Console.Clear();
-                        bool done = AddProduct();
+                        bool done = AddProduct(context);
                         if (done)
                         {
                             Console.Clear();
@@ -80,7 +82,15 @@ namespace PointOfSale
                         break;
                     case "2":
                         Console.Clear();
-                        bool updated = Inventory.Update();
+                        bool updated;
+                        if (context == null)
+                        {
+                            updated = Inventory.Update();
+                        }
+                        else
+                        {
+                            updated = EFInventory.Update(context);
+                        }
                         if (updated)
                         {
                             Console.Clear();
@@ -90,15 +100,29 @@ namespace PointOfSale
                         else
                         {
                             Console.WriteLine("Product not updated!");
-                            
+
                         }
                         break;
                     case "3":
                         Console.Clear();
-                        Inventory.RemoveProduct();
+                        if (context == null)
+                        {
+                            Inventory.RemoveProduct();
+                        }
+                        else
+                        {
+                            EFInventory.RemoveProduct(context);
+                        }
                         break;
                     case "4":
-                        Inventory.ViewProducts();
+                        if (context == null)
+                        {
+                            Inventory.ViewProducts();
+                        } 
+                        else
+                        {
+                            EFInventory.ViewProducts(context);
+                        }
                         break;
                     case "5":
                         Console.Clear();
@@ -114,7 +138,7 @@ namespace PointOfSale
             }
         }
 
-        public static void InventoryMenu()
+        public static void InventoryMenu(POSDbContext context)
         {
             while (true)
             {
@@ -134,19 +158,49 @@ namespace PointOfSale
                 {
                     case "1":
                         Console.Clear();
-                        Inventory.UpdateStock("increment");
+                        if (context == null)
+                        {
+                            Inventory.UpdateStock("increment");
+                        }
+                        else
+                        {
+                            EFInventory.UpdateStock(context, "increment");
+                        }
+                        
                         break;
                     case "2":
                         Console.Clear();
+                        if (context == null)
+                        {
+                            Inventory.UpdateStock("decrement");
+                        }
+                        else
+                        {
+                            EFInventory.UpdateStock(context, "decrement");
+                        }
+
                         Inventory.UpdateStock("decrement");
                         break;
                     case "3":
                         Console.Clear();
-                        Inventory.RemoveProduct(); ;
-                        Console.ReadKey();
+                        if (context == null)
+                        {
+                            Inventory.RemoveProduct();
+                        }
+                        else
+                        {
+                            EFInventory.RemoveProduct(context);
+                        }
                         break;
                     case "4":
-                        Inventory.ViewProducts();
+                        if (context == null)
+                        {
+                            Inventory.ViewProducts();
+                        }
+                        else
+                        {
+                            EFInventory.ViewProducts(context);
+                        }
                         break;
                     case "5":
                         return; // Go back to the previous menu
@@ -158,13 +212,13 @@ namespace PointOfSale
             }
         }
 
-      
 
-        public static bool AddProduct()
+
+        public static bool AddProduct(POSDbContext context)
         {
             Console.Clear();
             Console.WriteLine("Add product: ");
-           
+
             Console.WriteLine("Enter name of the product: ");
             string? name = Console.ReadLine();
 
@@ -172,42 +226,42 @@ namespace PointOfSale
             string? priceStr = Console.ReadLine();
 
             double price = 0;
-             bool valid = false;
-                
-                while (!valid)
-                {
-                    if (double.TryParse(priceStr, out price))
-                    {
-                        valid = true; // Exit the loop if input is a valid integer
-                    }
-                    else
-                    {
-                        Console.WriteLine("Invalid price. Please enter a valid number.");
-                        Console.WriteLine("Enter new price of the product: ");
-                        priceStr = Console.ReadLine();
+            bool valid = false;
 
-                    }
+            while (!valid)
+            {
+                if (double.TryParse(priceStr, out price))
+                {
+                    valid = true; // Exit the loop if input is a valid integer
                 }
-            
+                else
+                {
+                    Console.WriteLine("Invalid price. Please enter a valid number.");
+                    Console.WriteLine("Enter new price of the product: ");
+                    priceStr = Console.ReadLine();
+
+                }
+            }
+
             Console.WriteLine("Enter quantity of the product: ");
             string? quantityStr = Console.ReadLine();
             int quantity = 0;
             bool validInput = false;
-              
 
-                while (!validInput)
+
+            while (!validInput)
+            {
+                if (int.TryParse(quantityStr, out quantity))
                 {
-                    if (int.TryParse(quantityStr, out quantity))
-                    {
-                        validInput = true; // Exit the loop if input is a valid integer
-                    }
-                    else
-                    {
-                        Console.WriteLine("Invalid quantity input. Please enter a valid number.");
-                        Console.WriteLine("Enter new quantity of the product: ");
-                        quantityStr = Console.ReadLine();
-                    }
-                
+                    validInput = true; // Exit the loop if input is a valid integer
+                }
+                else
+                {
+                    Console.WriteLine("Invalid quantity input. Please enter a valid number.");
+                    Console.WriteLine("Enter new quantity of the product: ");
+                    quantityStr = Console.ReadLine();
+                }
+
             }
             Console.WriteLine("Enter type of product: ");
             string? type = Console.ReadLine();
@@ -220,19 +274,26 @@ namespace PointOfSale
             {
                 Console.WriteLine("All fields are required.");
                 Console.WriteLine("Press any key to add the product again!");
-                Console.ReadKey();  
-                return AddProduct();
+                Console.ReadKey();
+                return AddProduct(context);
             }
             else
             {
                 var prod = new Product { name = name, price = price, quantity = Convert.ToInt32(quantity), type = type, category = category };
-                Inventory.Add(prod);
+                if (context == null)
+                {
+                    Inventory.Add(prod);
+                }
+                else
+                {
+                    EFInventory.Add(context, prod);
+                }
                 return true;
             }
-           
+
         }
 
-        public static bool UpdateProduct(int input)
+        public static bool UpdateProduct(POSDbContext context, int input)
         {
             Console.Clear();
             Console.WriteLine("Update selected product: ");
@@ -265,7 +326,7 @@ namespace PointOfSale
             }
             Console.WriteLine("Enter new quantity of the product: ");
             string? quantityStr = Console.ReadLine();
-            
+
             if (!string.IsNullOrEmpty(quantityStr))
             {
                 bool validInput = false;
@@ -284,34 +345,57 @@ namespace PointOfSale
                     }
                 }
             }
-           
+
             Console.WriteLine("Enter new type of product: ");
             string? type = Console.ReadLine();
 
-          
+
             Console.WriteLine("Enter new category of product: ");
             string? category = Console.ReadLine();
-            
-           
-           return Inventory.Update2(input, name, category, type, quantityStr , priceStr);
-            
+
+            if (context == null)
+            {
+
+                return Inventory.Update2(input, name, category, type, quantityStr, priceStr);
+            }
+            else
+            {
+                return EFInventory.Update2(context, input, name, category, type,quantityStr, priceStr);
+            }
+
         }
 
-        public static void SetUserRole()
+        public static void SetUserRole(POSDbContext context)
         {
             Console.Clear();
-            UserData.ViewUsers();
+            UserData.ViewUsers(); // Display current users
             Console.WriteLine("Set/Update User Role");
             Console.WriteLine("Enter the id of the user: ");
-            int id = Convert.ToInt32(Console.ReadLine());
 
-            var user = UserData.Users.Find(x => x.Id == id);
+            int id;
+            while (!int.TryParse(Console.ReadLine(), out id))
+            {
+                Console.WriteLine("Invalid ID. Please enter a numeric value.");
+                Console.Write("Enter the id of the user: ");
+            }
+
+            User ? user;
+            if (context == null)
+            {
+                user = UserData.Users.Find(x => x.Id == id);
+            }
+            else
+            {
+                user = context.Users.FirstOrDefault(u => u.Id == id);
+            }
+
             if (user != null)
             {
                 Console.WriteLine("Select the role you want to assign:");
                 Console.WriteLine("1. Admin");
                 Console.WriteLine("2. Cashier");
                 Console.Write("Enter the number corresponding to the role: ");
+
                 int roleSelection;
                 while (!int.TryParse(Console.ReadLine(), out roleSelection) || (roleSelection != 1 && roleSelection != 2))
                 {
@@ -321,14 +405,21 @@ namespace PointOfSale
 
                 string newRole = roleSelection == 1 ? "Admin" : "Cashier";
                 user.role = newRole;
-                Console.WriteLine("Role has been updated!");
 
+                if (context != null)
+                {
+                    context.Users.Update(user);
+                    context.SaveChanges();
+                }
+
+                Console.WriteLine("Role has been updated!");
             }
             else
             {
                 Console.WriteLine("No such user exists!");
             }
         }
+
     }
 
 }

@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PointOfSale.Data;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
-namespace PointOfSale
+namespace PointOfSale.Services
 {
     public static class Inventory
     {
@@ -39,7 +40,7 @@ namespace PointOfSale
 
                 foreach (var product in Products)
                 {
-                    if(product.quantity != 0)
+                    if (product.quantity != 0)
                     {
                         Console.WriteLine($"{product.Id,-5} {product.name,-20} {product.price,-10:C} {product.quantity,-10} {product.type,-15} {product.category,-15}");
                     }
@@ -48,7 +49,7 @@ namespace PointOfSale
                 Console.WriteLine(new string('-', 80));
             }
 
-           
+
         }
 
 
@@ -71,8 +72,8 @@ namespace PointOfSale
                 }
                 else
                 {
-                    
-                    updated = Admin.UpdateProduct(input);
+
+                    updated = Admin.UpdateProduct(null, input);
 
                 }
             }
@@ -144,9 +145,9 @@ namespace PointOfSale
             //Console.ReadKey();
         }
 
-       public static void UpdateStock(string option)
+        public static void UpdateStock(string option)
         {
-            
+
             Console.Clear();
             ViewProducts();
             Console.WriteLine("Enter the id of the product you want to update: ");
@@ -159,7 +160,7 @@ namespace PointOfSale
                 if (searchResults is null)
                 {
                     Console.WriteLine("No matching products found.");
-                    
+
                 }
                 else
                 {
@@ -178,7 +179,7 @@ namespace PointOfSale
                         if (string.IsNullOrEmpty(input2))
                         {
                             Console.WriteLine("Retaining the original quantity!");
-                            
+
                         }
                         else
                         {
@@ -197,7 +198,7 @@ namespace PointOfSale
                                 Console.WriteLine($"The updated quantity is: {searchResults.quantity}");
                                 break;
                             }
-                            else if(quantity == 0)
+                            else if (quantity == 0)
                             {
                                 Products.Remove(searchResults);
                                 Console.WriteLine("Product has been removed");
@@ -206,7 +207,7 @@ namespace PointOfSale
                             else
                             {
                                 Console.WriteLine("Invalid quantity! Please enter a non-negative numeric value.");
-                                
+
                             }
                         }
 
@@ -214,7 +215,7 @@ namespace PointOfSale
                         Console.Write("Enter valid quantity: ");
                         input2 = Console.ReadLine();
                     }
-                    
+
                 }
             }
             else
@@ -226,6 +227,6 @@ namespace PointOfSale
                     query = Console.ReadLine();
                 }
             }
-       }
+        }
     }
 }

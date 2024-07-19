@@ -9,12 +9,12 @@ using System.ComponentModel.DataAnnotations;
 using static System.Reflection.Metadata.BlobBuilder;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace PointOfSale
+namespace PointOfSale.Data
 {
-    public class User 
+    public class User
     {
         [Key]
-        
+
         public int Id { get; set; }
         public required string name { get; set; }
         public required string email { get; set; }
@@ -23,5 +23,5 @@ namespace PointOfSale
 
 
     }
-   
+
 }

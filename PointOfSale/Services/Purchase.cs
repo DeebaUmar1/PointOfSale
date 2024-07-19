@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
+using PointOfSale.Data;
 
-namespace PointOfSale
+namespace PointOfSale.Services
 {
     public static class Purchase
     {
@@ -119,7 +120,7 @@ namespace PointOfSale
             {
                 return;
             }
-           
+
 
 
         }
@@ -131,7 +132,7 @@ namespace PointOfSale
                 double total = Transaction.SaleProducts.Sum(s => s.Quantity * s.ProductPrice);
                 Console.WriteLine($"Total Amount: {total:C}");
             }
-           
+
         }
 
         public static void GenerateReceipt()
@@ -146,14 +147,14 @@ namespace PointOfSale
                     Console.WriteLine($"{sale.Quantity} x {sale.ProductName} @ {sale.ProductPrice:C} = {sale.Quantity * sale.ProductPrice:C}");
                 }
                 CalculateTotalAmount();
-                
-               AddProductsToInventory();
+
+                AddProductsToInventory();
 
                 Transaction.SaleProducts.Clear();
                 //Console.ReadKey();
             }
 
-           
+
         }
 
         public static void AddProductsToInventory()
@@ -161,7 +162,7 @@ namespace PointOfSale
             foreach (var sale in Transaction.SaleProducts)
             {
                 var product = PurchaseProducts.Find(p => p.Id == sale.ProductId);
-                
+
                 if (product != null)
                 {
                     var newProduct = new Product
@@ -178,5 +179,5 @@ namespace PointOfSale
                 }
             }
         }
-    }   
+    }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using PointOfSale.Data;
+using PointOfSale.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -9,7 +11,7 @@ namespace PointOfSale
 {
     public static class Cashier
     {
-        public static void ShowCashierMenu()
+        public static void ShowCashierMenu(POSDbContext context)
         {
             while (true)
             {
@@ -28,19 +30,47 @@ namespace PointOfSale
                 {
                     case "1":
                         Console.Clear();
-                        AddProductToSale();
+                        if (context == null)
+                        {
+                            AddProductToSale();
+                        }
+                        else
+                        {
+                            EFTransaction.AddProductToSale(context);
+                        }
                         break;
                     case "2":
                         Console.Clear();
-                        PrintTotalAmount();
+                        if (context != null)
+                        {
+                            EFTransaction.PrintTotalAmount(context);
+                        }
+                        else 
+                        { 
+                        PrintTotalAmount(); }
                         break;
                     case "3":
                         Console.Clear();
-                        GenerateReceipt();
+                        if (context != null)
+                        {
+                            EFTransaction.GenerateReceipt(context);
+                        }
+                        else
+                        {
+                            GenerateReceipt();
+                        }
                         break;
                     case "4":
                         Console.Clear();
-                        UpdateProductsInSale();
+                        if (context != null)
+                        {
+                            EFTransaction.UpdateProductsInSale(context);
+
+                        }
+                        else
+                        {
+                            UpdateProductsInSale();
+                        }
                         break;
                     case "5":
                         return;
@@ -94,7 +124,7 @@ namespace PointOfSale
                         }
                         originalProduct.quantity += saleProductToUpdate.Quantity; // Restore the original quantity
                         saleProductToUpdate.Quantity = newQuantity;
-                       
+
                         if (newQuantity == 0)
                         {
                             Transaction.SaleProducts.Remove(saleProductToUpdate);
@@ -116,7 +146,7 @@ namespace PointOfSale
                 }
 
                 Console.Write("Do you want to update another product in the sale? (y/n): ");
-           
+
                 string? response = Console.ReadLine();
                 while (response == null)
                 {
@@ -139,7 +169,7 @@ namespace PointOfSale
             }
             Console.WriteLine("Sale updated.");
             Generate();
-            
+
         }
 
         public static void Generate()
@@ -167,7 +197,7 @@ namespace PointOfSale
             }
             else
             {
-                ShowCashierMenu();
+                ShowCashierMenu(null);
             }
         }
         public static void AddProductToSale()
@@ -191,8 +221,8 @@ namespace PointOfSale
                         Console.Write("Enter valid quantity: ");
                         q = Convert.ToInt32(Console.ReadLine());
                     }
-                    
-                    
+
+
                     var sale = new SaleProducts
                     {
                         Date = DateTime.Now,
@@ -201,9 +231,9 @@ namespace PointOfSale
                         ProductName = product.name,
                         ProductPrice = product.price
                     };
-                    
+
                     product.quantity -= q;
-                     
+
                     Transaction.Add(sale);
                     Console.WriteLine("Product added to sale");
                 }
@@ -214,20 +244,20 @@ namespace PointOfSale
 
                 Console.Write("Do you want to add another product to the sale? (y/n): ");
                 string? response = Console.ReadLine();
-                while(response == null)
+                while (response == null)
                 {
                     Console.WriteLine("You have to enter y or n: ");
                     Console.Write("Do you want to add another product to the sale? (y/n): ");
                     response = Console.ReadLine();
                 }
                 response = response.Trim().ToLower();
-                    while (response != "y" && response != "n" )
-                    {
-                        Console.WriteLine("Invalid response!");
-                        Console.Write("Do you want to add another product to the sale? (y/n): ");
-                        response = Console.ReadLine();
-                        response = response?.Trim().ToLower();
-                    }
+                while (response != "y" && response != "n")
+                {
+                    Console.WriteLine("Invalid response!");
+                    Console.Write("Do you want to add another product to the sale? (y/n): ");
+                    response = Console.ReadLine();
+                    response = response?.Trim().ToLower();
+                }
                 if (response != "y")
                 {
                     addMoreProducts = false;
@@ -243,7 +273,7 @@ namespace PointOfSale
             {
                 Console.WriteLine("Press any key to go back!");
             }
-         
+
         }
         public static void PrintTotalAmount()
         {
@@ -287,12 +317,12 @@ namespace PointOfSale
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
             }
-           
+
             else
             {
                 Console.WriteLine("Please add products to sale before generating receipt.");
             }
         }
-      
+
     }
 }

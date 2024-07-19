@@ -1,23 +1,28 @@
-﻿using System;
+﻿using PointOfSale.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PointOfSale
-{ 
-    public static class UserData
+namespace PointOfSale.Services
+{
+    public static class EFUserData
     {
-        public static List<User> Users = new List<User>()
-             {
-                new User { Id = 1, name = "admin", email = "email", password = Password.EncodePasswordToBase64("adminpass"), role = "Admin" },
-                new User { Id = 2, name = "cashier", email = "email", password = Password.EncodePasswordToBase64("cashierpass"), role = "Cashier" },
-                new User { Id = 3, name = "manager", email = "email", password = "managerpass", role = "Admin" },
-                // Add more users as needed
-            };
-        private static int _userIdCounter = 4;
+        public static void SeedData(POSDbContext context)
+        {
+            if (!context.Users.Any())
+            {
+                context.Users.AddRange(
+                    new User { Id = 1, name = "admin", email = "email", password = Password.EncodePasswordToBase64("adminpass"), role = "Admin" },
+                    new User { Id = 2, name = "cashier", email = "email", password = Password.EncodePasswordToBase64("cashierpass"), role = "Cashier" },
+                    new User { Id = 3, name = "manager", email = "email", password = Password.EncodePasswordToBase64("managerpass"), role = "Admin" }
+                );
+                context.SaveChanges();
+            }
+        }
 
-        public static void ViewUsers()
+        public static void ViewUsers(POSDbContext context)
         {
             Console.Clear();
             Console.WriteLine("User List:");
@@ -25,40 +30,41 @@ namespace PointOfSale
             Console.WriteLine("ID\tName\t\tEmail\t\tRole");
             Console.WriteLine("------------------------------------------------");
 
-            foreach (var user in Users)
+            foreach (var user in context.Users)
             {
                 Console.WriteLine($"{user.Id}\t{user.name}\t\t{user.email}\t\t{user.role}");
             }
 
             Console.WriteLine("------------------------------------------------");
-           
-        }
-        public static List<User> GetUsers()
-        {
-            return Users;
         }
 
-        public static void Add(User user)
+        public static List<User> GetUsers(POSDbContext context)
         {
-            user.Id = _userIdCounter++;
-            Users.Add(user);
+            return context.Users.ToList();
         }
-        public static string Search(string name, string password)
+
+        public static void Add(POSDbContext context, User user)
         {
-            //Console.WriteLine(name, password);
-            var searchResults = Users.FirstOrDefault(user => user.name == name);
-            if(searchResults == null)
+            user.Id = context.Users.Max(u => u.Id) + 1;
+            context.Users.Add(user);
+            context.SaveChanges();
+        }
+
+        public static string Search(POSDbContext context, string name, string password)
+        {
+            var searchResults = context.Users.FirstOrDefault(user => user.name == name);
+            if (searchResults == null)
             {
                 return null;
             }
             else
             {
-                
                 string encryptedPassword = searchResults.password;
                 string decryptedPassword = Password.DecodeFrom64(encryptedPassword);
-               
+
                 if (password == decryptedPassword)
                 {
+                  
                     string? userrole = searchResults.role;
                     if (userrole != null)
                     {
@@ -70,15 +76,14 @@ namespace PointOfSale
                         Console.WriteLine("Role is not assigned yet!");
                         return "norole";
                     }
+                   
                 }
                 else
                 {
                     return "Wrong";
                 }
             }
-          
-
         }
-      
+
     }
 }

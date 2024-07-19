@@ -1,15 +1,18 @@
-﻿using System;
+﻿using PointOfSale.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace PointOfSale
+namespace PointOfSale.Services
 {
     public static class Authentication
     {
-        public static void Login()
+       
+    
+        public static void Login(POSDbContext context)
         {
             //Console.Clear();
             Console.WriteLine("Please login: ");
@@ -22,33 +25,41 @@ namespace PointOfSale
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(password))
             {
                 Console.WriteLine("All fields are required.");
-                Login();
+                Login(context);
             }
             else
             {
-                string role = UserData.Search(name, password);
+                string role;
+                if (context == null)
+                {
+                    role = UserData.Search(name, password);
+                }
+                else
+                {
+                    role = EFUserData.Search(context, name, password);
+                }
                 if (role == null)
                 {
                     Console.WriteLine("No such user exists! Please register before logging in!");
-                    Register();
+                    Register(context);
                 }
                 else
                 {
                     if (role == "Admin")
                     {
                         Console.WriteLine("You have successfully logged in!");
-                        Admin.ShowAdminMenuMain();
+                        Admin.ShowAdminMenuMain(context);
                     }
                     else if (role == "Cashier")
                     {
                         Console.WriteLine("You have successfully logged in!");
-                        Cashier.ShowCashierMenu();
+                        Cashier.ShowCashierMenu(context);
 
                     }
                     else if (role == "Wrong")
                     {
                         Console.WriteLine("Wrong Password!");
-                        
+
                     }
                     else if (role == "norole")
                     {
@@ -56,7 +67,7 @@ namespace PointOfSale
                         Console.WriteLine("Admin has not assigned your role yet! \n Admin! please assign role!");
                         Console.WriteLine("Press any key to go to login!");
                         Console.ReadKey();
-                        Login();
+                        Login(context);
 
                     }
                     else
@@ -69,7 +80,7 @@ namespace PointOfSale
             }
         }
 
-        public static void Register()
+        public static void Register(POSDbContext context)
         {
             Console.WriteLine("Registration: ");
             Console.WriteLine("Enter your name: ");
@@ -77,7 +88,7 @@ namespace PointOfSale
             if (string.IsNullOrEmpty(name))
             {
                 Console.WriteLine("All fields are required. Register again");
-                Register();
+                Register(context);
             }
             else
             {
@@ -117,7 +128,15 @@ namespace PointOfSale
 #pragma warning restore CS8601 // Possible null reference assignment.
                 try
                 {
-                    UserData.Add(user);
+                    if (context == null)
+                    {
+                        UserData.Add(user);
+                     
+                    }
+                    else
+                    {
+                        EFUserData.Add(context, user);
+                    }
                     Console.WriteLine("User registered successfully with default role 'Cashier'.\"");
                     Console.WriteLine("Press any key to proceed..");
                     Console.ReadKey();
@@ -128,6 +147,6 @@ namespace PointOfSale
                     Console.ReadLine();
                 }
             }
-        } 
+        }
     }
 }
