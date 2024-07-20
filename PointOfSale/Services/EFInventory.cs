@@ -52,6 +52,7 @@ namespace PointOfSale.Services
         }
         public static void Add(POSDbContext context, Product product)
         {
+            SeedProducts(context);
             product.Id = context.Products.Max(u => u.Id) + 1;
             context.Products.Add(product);
             context.SaveChanges();

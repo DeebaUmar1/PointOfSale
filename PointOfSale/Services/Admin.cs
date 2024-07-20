@@ -355,7 +355,7 @@ namespace PointOfSale.Services
 
             if (context == null)
             {
-
+               
                 return Inventory.Update2(input, name, category, type, quantityStr, priceStr);
             }
             else
