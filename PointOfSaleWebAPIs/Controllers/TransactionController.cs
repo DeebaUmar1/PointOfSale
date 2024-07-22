@@ -21,32 +21,49 @@ namespace PointOfSaleWebAPIs.Controllers
         }
 
         [HttpPost("AddProductToSale")]
-        public IActionResult AddProductToSale([FromBody] SaleProducts saleProduct)
+        public IActionResult AddProductToSale(int id, int quantity)
         {
-            EFTransaction.Add(context, saleProduct);
-            return Ok("Product added to sale");
-        }
+            bool added = EFTransaction.AddProductToSaleApi(context, id, quantity);
+            if (added)
+            {
 
-        [HttpPut("UpdateProductsInSale")]
-        public IActionResult UpdateProductsInSale()
+                return Ok("Product added to sale");
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+        [HttpGet("ViewProductsinSale")]
+        public IActionResult ViewSaleProducts()
         {
-            EFTransaction.UpdateProductsInSale(context);
-            return Ok("Products updated in sale");
+            var saleProducts = context.SaleProducts.ToList();
+            return Ok(saleProducts);
+        }
+        [HttpPut("UpdateProductsInSale")]
+        public IActionResult UpdateProductsInSale(int id, int quantity)
+        {
+            bool updated = EFTransaction.UpdateProductsInSaleApi(context, id, quantity);
+            if (updated)
+            {
+
+                return Ok("Products updated in sale");
+            }
+            else
+            {
+                return BadRequest();
+            }
+            
         }
 
         [HttpGet("GenerateReceipt")]
         public IActionResult GenerateReceipt()
         {
-            EFTransaction.Generate(context);
-            return Ok("Receipt generated");
+            var receipt = EFTransaction.GenerateReceiptAPI(context);
+            return Ok(receipt);
         }
 
-        [HttpGet("PrintTotalAmount")]
-        public IActionResult PrintTotalAmount()
-        {
-            EFTransaction.PrintTotalAmount(context);
-            return Ok();
-        }
+        
 
         [HttpGet("CalculateTotalAmount")]
         public IActionResult CalculateTotalAmount()

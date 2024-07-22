@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PointOfSale.Data;
+using PointOfSale.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,50 @@ namespace PointOfSale.Services
             context.SaveChanges();
         }
 
+        public static bool UpdateProductsInSaleApi(POSDbContext context, int productId, int quantity)
+        {
+            var saleProductToUpdate = context.SaleProducts.FirstOrDefault(p => p.ProductId == productId);
+            if (saleProductToUpdate != null)
+            {
+                var originalProduct = context.Products.FirstOrDefault(p => p.Id == productId);
+                if (originalProduct != null)
+                {
+                    int originalSaleQuantity = saleProductToUpdate.Quantity;
+                    int availableQuantity = originalProduct.quantity + originalSaleQuantity;
+
+                    if (quantity < 0 || quantity > availableQuantity)
+                    {
+                       return false;
+                    }
+                    originalProduct.quantity += originalSaleQuantity; // Restore the original quantity
+                    saleProductToUpdate.Quantity = quantity;
+
+                    if (quantity == 0)
+                    {
+                        context.SaleProducts.Remove(saleProductToUpdate);
+                    }
+                    else
+                    {
+                        originalProduct.quantity -= quantity;
+                        context.Products.Update(originalProduct);
+                    }
+
+                    context.SaveChanges();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+               
+            }
+            else
+            {
+                Console.WriteLine("Product does not exists!");
+                return false;
+
+            }
+        }
         public static void UpdateProductsInSale(POSDbContext context)
         {
             var saleProducts = context.SaleProducts.ToList();
@@ -138,7 +183,37 @@ namespace PointOfSale.Services
             
         }
 
+        public static bool AddProductToSaleApi(POSDbContext context, int productId, int quantity)
+        {
+            var product = context.Products.FirstOrDefault(p => p.Id == productId);
+            if (product != null)
+            {
+                if (quantity <= 0 || quantity > product.quantity)
+                {
+                    return false;
+                }
+                var sale = new SaleProducts
+                {
+                    Date = DateTime.Now,
+                    Quantity = quantity,
+                    ProductId = productId,
+                    ProductName = product.name,
+                    ProductPrice = product.price
+                };
 
+                product.quantity -= quantity;
+                context.Products.Update(product);
+                context.SaleProducts.Add(sale);
+                context.SaveChanges();
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("Product does not exists!");
+                return false;
+
+            }
+        }
         public static void AddProductToSale(POSDbContext context)
         {
             bool addMoreProducts = true;
@@ -203,9 +278,40 @@ namespace PointOfSale.Services
                 Console.WriteLine("Press any key to go back!");
             }
         }
+        public static List<FinalReceipt> GenerateReceiptAPI(POSDbContext context)
+        {
+            var saleProducts = context.SaleProducts.ToList();
+            var receipt = new List<Receipt>();
+            var totalReceipt = new List<FinalReceipt>();
+            if (saleProducts.Any())
+            {
+                foreach (var sale in saleProducts)
+                {
+                    string totalPrice = (sale.Quantity * sale.ProductPrice).ToString("C");
+                    receipt.Add(new Receipt
+                    {
+                        Quantity = sale.Quantity.ToString(),
+                        Product = sale.ProductName,
+                        Price = sale.ProductPrice.ToString("C"),
+                        Total = totalPrice
+                    });
+                }
+
+                var totalAmount = CalculateTotalAmount(context).ToString("C");
+
+                totalReceipt.Add(new FinalReceipt { Receipt = receipt.ToList(), TotalAmount = totalAmount
+                });
+
+                context.SaleProducts.RemoveRange(saleProducts);
+                context.SaveChanges();
+            }
+
+            return totalReceipt;
+        }
         public static void GenerateReceipt(POSDbContext context)
         {
             var saleProducts = context.SaleProducts.ToList();
+            //var receipt = new List<Receipt>();
 
             if (saleProducts.Any())
             {
@@ -217,16 +323,18 @@ namespace PointOfSale.Services
                 foreach (var sale in saleProducts)
                 {
                     string totalPrice = (sale.Quantity * sale.ProductPrice).ToString("C");
+                   
                     Console.WriteLine($"{sale.Quantity,-10} {sale.ProductName,-20} {sale.ProductPrice,-10:C} {totalPrice,-10}");
                 }
+                string totalAmount;
+                Console.WriteLine(new string('-', 50));
+                Console.WriteLine($"{"Total Amount:",-30} {totalAmount = Convert.ToString(CalculateTotalAmount(context)):C}");
 
                 Console.WriteLine(new string('-', 50));
-                Console.WriteLine($"{"Total Amount:",-30} {CalculateTotalAmount(context):C}");
-                Console.WriteLine(new string('-', 50));
-
+              
                 context.SaleProducts.RemoveRange(saleProducts);
                 context.SaveChanges();
-
+                
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
             }
@@ -234,6 +342,7 @@ namespace PointOfSale.Services
             {
                 Console.WriteLine("Please add products to sale before generating receipt.");
             }
+           
         }
 
     }

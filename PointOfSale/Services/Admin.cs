@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -105,13 +106,36 @@ namespace PointOfSale.Services
                         break;
                     case "3":
                         Console.Clear();
+
                         if (context == null)
                         {
                             Inventory.RemoveProduct();
                         }
                         else
                         {
-                            EFInventory.RemoveProduct(context);
+                            var products = context.Products.ToList();
+                            if (products.Count == 0)
+                            {
+                                Console.WriteLine("No products to remove.");
+                                Console.ReadKey();
+                                return;
+                            }
+
+                            EFInventory.ViewProducts(context);
+                            Console.Write("Enter the id of the product to remove: ");
+                            string? input = Console.ReadLine();
+                            int productNumber = Convert.ToInt32(input);
+                            bool removed = EFInventory.RemoveProduct(context, productNumber);
+                            if(removed)
+                            {
+                                Console.WriteLine("Product removed successfully!");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Product has not been removed!");
+                            }
+
+                            Console.ReadKey();
                         }
                         break;
                     case "4":
@@ -189,7 +213,7 @@ namespace PointOfSale.Services
                         }
                         else
                         {
-                            EFInventory.RemoveProduct(context);
+                            //EFInventory.RemoveProduct(context);
                         }
                         break;
                     case "4":

@@ -2,9 +2,11 @@
 using PointOfSale.Data;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace PointOfSale.Services
 {
@@ -58,6 +60,39 @@ namespace PointOfSale.Services
             context.SaveChanges();
         }
 
+        public static bool AddProductAPI(POSDbContext context, Product prod)
+        {
+            if (string.IsNullOrEmpty(prod.name) || string.Equals(prod.name, "string"))
+            {
+               return false;
+            }
+
+            
+            if (string.IsNullOrEmpty(prod.category) || string.Equals(prod.category, "string"))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(prod.type) || string.Equals(prod.type, "string"))
+            {
+                return false;
+            }
+
+            if (prod.quantity <= 0)
+            {
+                return false;
+            }
+
+            
+            if (prod.price <= 0.0)
+            {
+                return false;
+            }
+
+            Add(context, prod);
+            return true;
+        }
+
         public static void ViewProducts(POSDbContext context)
         {
           
@@ -86,22 +121,9 @@ namespace PointOfSale.Services
             
         }
 
-        public static void RemoveProduct(POSDbContext context)
+        public static bool RemoveProduct(POSDbContext context, int productNumber)
         {
-            Console.Clear();
-            var products = context.Products.ToList();
-            if (products.Count == 0)
-            {
-                Console.WriteLine("No products to remove.");
-                Console.ReadKey();
-                return;
-            }
-
-            ViewProducts(context);
-            Console.Write("Enter the id of the product to remove: ");
-            string? input = Console.ReadLine();
-            int productNumber = Convert.ToInt32(input);
-
+            
             if (productNumber > 0)
             {
                 var prod = context.Products.FirstOrDefault(p => p.Id == productNumber);
@@ -110,19 +132,22 @@ namespace PointOfSale.Services
 
                     context.Products.Remove(prod);
                     context.SaveChanges();
-                    Console.WriteLine("Product removed successfully!");
+                    //Console.WriteLine("Product removed successfully!");
+                    return true;
                 }
                 else
                 {
                     Console.WriteLine("Product does not exists");
+                    return false;
                 }
-                //Console.ReadKey();
+                
             }
             else
             {
                 Console.WriteLine("Invalid number! Please try again.");
+                return false;
             }
-            //Console.ReadKey();
+            
         }
 
         public static bool Update(POSDbContext context)
@@ -267,6 +292,58 @@ namespace PointOfSale.Services
                     query = Console.ReadLine();
                 }
             }
+        }
+
+        public static bool UpdateAPI(POSDbContext context, Product prod)
+        {
+            try
+            {
+
+                var product = context.Products.Find(prod.Id);
+                if (product != null)
+                {
+                    // Update product name if it's not null, empty, or "string"
+                    if (!string.IsNullOrEmpty(prod.name) && !string.Equals(prod.name, "string"))
+                    {
+                        product.name = prod.name;
+                    }
+
+                    // Update product category if it's not null, empty, or "string"
+                    if (!string.IsNullOrEmpty(prod.category) && !string.Equals(prod.category, "string"))
+                    {
+                        product.category = prod.category;
+                    }
+
+                    // Update product type if it's not null, empty, or "string"
+                    if (!string.IsNullOrEmpty(prod.type) && !string.Equals(prod.type, "string"))
+                    {
+                        product.type = prod.type;
+                    }
+
+                    // Update product quantity if it's greater than 0
+                    if (prod.quantity > 0)
+                    {
+                        product.quantity = prod.quantity;
+                    }
+
+                    // Update product price if it's greater than 0
+                    if (prod.price > 0.0)
+                    {
+                        product.price = prod.price;
+                    }
+
+                    context.SaveChanges();
+                    return true;
+                }
+                return false;
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+            }
+            return false;
         }
     }
 }

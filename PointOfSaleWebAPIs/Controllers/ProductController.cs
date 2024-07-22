@@ -19,14 +19,7 @@ namespace PointOfSaleWebAPIs.Controllers
             this.context = context;
         }
 
-        [HttpGet ("ViewProducts")]
-        public IActionResult ViewProducts()
-        {
-            EFInventory.ViewProducts (context);
-            return Ok();
-        }
-
-
+        
         // in web api / web proje cts actions are asynchronous
         // web api endpoints returns response not views
         [HttpGet]

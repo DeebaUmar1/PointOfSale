@@ -28,8 +28,16 @@ namespace PointOfSaleWebAPIs.Controllers
         [HttpPost("AddProduct")]
         public IActionResult AddProduct(Product product)
         {
-            EFInventory.Add(_context, product);
-            return Ok("Product added");
+            bool added = EFInventory.AddProductAPI(_context, product);
+            if (added)
+            {
+                return Ok("Product added");
+            }
+            else
+            {
+                return BadRequest("All fields are required");
+            }
+            
         }
 
         [HttpGet("ViewProducts")]
@@ -42,66 +50,52 @@ namespace PointOfSaleWebAPIs.Controllers
         [HttpDelete("RemoveProduct/{id}")]
         public IActionResult RemoveProduct(int id)
         {
-            var product = _context.Products.Find(id);
-            if (product == null)
-            {
-                return NotFound("Product not found");
-            }
-
-            _context.Products.Remove(product);
-            _context.SaveChanges();
+            EFInventory.RemoveProduct(_context, id);
             return Ok("Product removed");
         }
 
         [HttpPut("UpdateProduct")]
         public IActionResult UpdateProduct(Product product)
         {
-            if (product == null || product.Id == 0)
-            {
-                return BadRequest("Invalid product data");
-            }
+            bool updated = EFInventory.UpdateAPI(_context,product);
 
-            var existingProduct = _context.Products.Find(product.Id);
-            if (existingProduct == null)
+            if (updated)
             {
-                return NotFound("Product not found");
-            }
 
-            existingProduct.name = product.name;
-            existingProduct.category = product.category;
-            existingProduct.type = product.type;
-            existingProduct.quantity = product.quantity;
-            existingProduct.price = product.price;
-
-            _context.SaveChanges();
-            return Ok("Product updated");
-        }
-
-       /* [HttpPut("UpdateStock/{id}")]
-        public IActionResult UpdateStock(int id, [FromQuery] string option, [FromQuery] int quantity)
-        {
-            var product = _context.Products.Find(id);
-            if (product == null)
-            {
-                return NotFound("Product not found");
-            }
-
-            if (option == "increment")
-            {
-                product.quantity += quantity;
-            }
-            else if (option == "decrement")
-            {
-                product.quantity -= quantity;
+                return Ok("Product updated");
             }
             else
             {
-                return BadRequest("Invalid option");
+                return BadRequest();
             }
+          
+        }
 
-            _context.SaveChanges();
-            return Ok("Product stock updated");
-        }*/
+        /* [HttpPut("UpdateStock/{id}")]
+         public IActionResult UpdateStock(int id, [FromQuery] string option, [FromQuery] int quantity)
+         {
+             var product = _context.Products.Find(id);
+             if (product == null)
+             {
+                 return NotFound("Product not found");
+             }
+
+             if (option == "increment")
+             {
+                 product.quantity += quantity;
+             }
+             else if (option == "decrement")
+             {
+                 product.quantity -= quantity;
+             }
+             else
+             {
+                 return BadRequest("Invalid option");
+             }
+
+             _context.SaveChanges();
+             return Ok("Product stock updated");
+         }*/
     }
 
 }
