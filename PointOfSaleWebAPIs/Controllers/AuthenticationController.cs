@@ -77,7 +77,7 @@ namespace PointOfSaleWebAPIs.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Error while logging in : {ex.Message}");
-                return BadRequest();
+                return BadRequest($"Error while logging in : {ex.Message}");
             }
         }
 

@@ -14,6 +14,7 @@ namespace PointOfSale.Services
     public static class Authentication
     {
 
+
         public static void Login(POSDbContext context)
         {
             //Console.Clear();

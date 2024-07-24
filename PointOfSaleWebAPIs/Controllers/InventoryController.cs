@@ -88,7 +88,7 @@ namespace PointOfSaleWebAPIs.Controllers
             try
             {
                 EFInventory.RemoveProduct(_context, id);
-                _logger.LogInformation($"Product with {id} is removed");
+                _logger.LogInformation($"Product with id#{id} is removed");
                 return Ok("Product removed");
             }
             catch (Exception ex)
