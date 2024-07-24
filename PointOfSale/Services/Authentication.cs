@@ -1,7 +1,9 @@
-﻿using PointOfSale.Data;
+﻿using log4net.Util;
+using PointOfSale.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -11,23 +13,7 @@ namespace PointOfSale.Services
 {
     public static class Authentication
     {
-        public static void LoginAPI(POSDbContext context, string name, string password)
-        {
-            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(password))
-            {
-                Console.WriteLine("All fields are required.");
-                Login(context);
-            }
-            else
-            {
-                string role;
 
-
-                role = EFUserData.Search(context, name, password);
-
-            }
-        }
-    
         public static void Login(POSDbContext context)
         {
             //Console.Clear();
@@ -148,12 +134,12 @@ namespace PointOfSale.Services
                     if (context == null)
                     {
                         added = UserData.Add(user);
-                     
+
                     }
                     else
                     {
                         added = EFUserData.Add(context, user);
-                      
+
                     }
                     if (added)
                     {
@@ -177,6 +163,30 @@ namespace PointOfSale.Services
                     Console.ReadLine();
                 }
             }
+        }
+        
+        public static bool LoginAPI(POSDbContext context, string username, string password)
+        { 
+        
+            string role = EFUserData.Search(context, username, password);
+            if (role  == "Wrong")
+            {  
+                    return false;
+            }
+            else
+            {
+                 return true;
+            } 
+       
+        }
+
+        public static bool RegisterAPI(POSDbContext context, User user)
+        {
+            string pswd = Password.EncodePasswordToBase64(user.password);
+            user.password = pswd;
+
+
+            return EFUserData.Add(context, user); ;
         }
     }
 }

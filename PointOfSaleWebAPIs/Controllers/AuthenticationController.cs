@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.RegularExpressions;
 namespace PointOfSaleWebAPIs.Controllers
 {
     [Route("api/[controller]")]
@@ -60,25 +61,18 @@ namespace PointOfSaleWebAPIs.Controllers
         {
             try
             {
-                var searchResults = context.Users.FirstOrDefault(user => user.name == username);
-                if (searchResults == null)
+                bool loggedIn = Authentication.LoginAPI(context, username, password);
+                if (loggedIn)
                 {
-                    _logger.LogError("User does not exists");
-                    return BadRequest("User does not exists!");
+                    _logger.LogInformation("User logged in!");
+                    return Ok(GetToken(username, password));
                 }
                 else
-                { 
-                    if (password == searchResults.password)
-                    {
-                        _logger.LogInformation("User logged in!");
-                        return Ok(GetToken(username, password));
-                    }
-                    else
-                    {
-                        _logger.LogError("Incorrect password");
-                        return BadRequest("Incorrect password");
-                    }
-                } 
+                {
+                    _logger.LogError("Incorrect Password!");
+                    return BadRequest("Incorrect password");
+                }
+              
             }
             catch (Exception ex)
             {
@@ -93,10 +87,41 @@ namespace PointOfSaleWebAPIs.Controllers
         {
             try
             {
-                await context.Users.AddAsync(user);
-                await context.SaveChangesAsync();
-                _logger.LogInformation("User added successfully!");
-                return Ok(user);
+                if (string.IsNullOrEmpty(user.name) || string.Equals(user.name, "string"))
+                {
+                    return BadRequest("Invalid Name");
+                }
+
+
+                if (string.IsNullOrEmpty(user.email) || string.Equals(user.email, "string") || !EmailValidation.IsValidEmail(user.email))
+                {
+                    return BadRequest("Invalid Email");
+                }
+
+                if (string.Equals(user.role, "string"))
+                {
+                    return BadRequest("Invalid Role");
+                }
+
+
+
+                Regex vaildate_password = Password.ValidatePassword();
+                if (string.IsNullOrEmpty(user.password) || vaildate_password.IsMatch(user.password) != true)
+                {
+                    return BadRequest("Invalid Password(must contain numbers, at least one capital alphabet");
+                }
+
+                if(Authentication.RegisterAPI(context, user))
+                {
+                    _logger.LogInformation("User added successfully!");
+                    return Ok(user);
+                }
+                else
+                {
+                    _logger.LogWarning("Invalid data");
+                    return BadRequest("User already exists!");
+                }
+              
             }
             catch (Exception ex)
             {

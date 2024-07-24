@@ -8,7 +8,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace PointOfSale.Services
 {
-    public static class Inventory
+    public static class Inventory 
     {
         public static List<Product> Products = new List<Product>()
         {

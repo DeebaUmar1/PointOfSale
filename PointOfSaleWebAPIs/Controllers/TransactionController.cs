@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PointOfSale;
 using PointOfSale.Data;
+using PointOfSale.Entities;
 using PointOfSale.Services;
 using System;
 using System.Linq;
@@ -40,7 +41,7 @@ namespace PointOfSaleWebAPIs.Controllers
                 else
                 {
                     _logger.LogWarning("Product is not added To sale");
-                    return BadRequest();
+                    return BadRequest("This product does not exists/Invalid quanity!");
                 }
             }
             catch (Exception ex)
@@ -71,6 +72,7 @@ namespace PointOfSaleWebAPIs.Controllers
         {
             try
             {
+                
                 bool updated = EFTransaction.UpdateProductsInSaleApi(context, id, quantity);
                 if (updated)
                 {
@@ -80,7 +82,7 @@ namespace PointOfSaleWebAPIs.Controllers
                 else
                 {
                     _logger.LogWarning("Product not added To sale");
-                    return BadRequest();
+                    return BadRequest("This product is not in sale/Invalid Quantity");
                 }
             }
             catch (Exception ex)
@@ -98,8 +100,16 @@ namespace PointOfSaleWebAPIs.Controllers
             try
             {
                 var receipt = EFTransaction.GenerateReceiptAPI(context);
-                _logger.LogInformation($"{receipt}");   
-                return Ok(receipt);
+                if (receipt.Count == 0)
+                {
+                    _logger.LogWarning("Add products in sale please");
+                    return NotFound("There are no products in sale");
+                }
+                else
+                {
+                    _logger.LogInformation($"{receipt}");
+                    return Ok(receipt);
+                }
             }
             catch (Exception ex)
             {
@@ -117,8 +127,17 @@ namespace PointOfSaleWebAPIs.Controllers
             try
             {
                 double totalAmount = EFTransaction.CalculateTotalAmount(context);
-                _logger.LogInformation($"Total amount: {totalAmount}");
-                return Ok(totalAmount);
+                if (totalAmount == 0)
+                {
+                    _logger.LogWarning("Add products in sale please");
+                    return NotFound("There are no products in sale");
+                }
+                else
+                {
+                    _logger.LogInformation($"Total amount: {totalAmount}");
+                    return Ok(totalAmount);
+                }
+               
             }
             catch (Exception ex)
             {

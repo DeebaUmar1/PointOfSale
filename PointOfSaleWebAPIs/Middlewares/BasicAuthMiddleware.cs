@@ -32,7 +32,7 @@ namespace PointOfSaleWebAPIs.Middlewares
                     var username = credentials[0];
                     var password = credentials[1];
 
-                    // Verify credentials against the database
+                    // Verify credentials against the Users context
                     var user = dbContext.Users.SingleOrDefault(u => u.name == username && u.password == password);
 
                     if (user != null)

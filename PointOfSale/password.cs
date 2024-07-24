@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace PointOfSale
 {
-    static class Password
+    public static class Password
     {
         public static string EncodePasswordToBase64(string password)
         {

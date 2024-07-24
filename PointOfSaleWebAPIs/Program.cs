@@ -42,8 +42,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseMiddleware<BearerTokenMiddleware>();
-app.UseMiddleware<BasicAuthMiddleware>();
+
+//app.UseMiddleware<BasicAuthMiddleware>();
+app.UseMiddleware<BearerTokenMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

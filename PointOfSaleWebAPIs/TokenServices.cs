@@ -13,28 +13,35 @@ namespace PointOfSaleWebAPIs
 
         public TokenService()
         {
+            //uses secret key to create signature on token
             _signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(SecretKey));
         }
 
         public string GenerateToken(string username)
         {
+            //to create and validate JWT
             var tokenHandler = new JwtSecurityTokenHandler();
+           //to describe to whom the token belongs to, the expiration, etc.
             var tokenDescriptor = new SecurityTokenDescriptor
             {
+                //adds a piece of info to the username
                 Subject = new ClaimsIdentity(new[]
                 {
                 new Claim(ClaimTypes.Name, username)
             }),
                 Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256Signature)
+                SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256Signature) 
+                // this signs the token using
+                // signingkey plus algorithm
             };
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            var token = tokenHandler.CreateToken(tokenDescriptor); //creates token
+            return tokenHandler.WriteToken(token); // converts token to string and sends it to client side
         }
         public ClaimsPrincipal GetPrincipalFromToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
+
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,

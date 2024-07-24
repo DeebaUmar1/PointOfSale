@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PointOfSale
 {
-    internal class EmailValidation
+    public  class EmailValidation
     {
         public static bool IsValidEmail(string email)
         {

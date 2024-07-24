@@ -41,8 +41,6 @@ namespace PointOfSale.Services
 
         public static bool Add(User user)
         {
-
-           
             foreach (var item in Users)
             {
                 if (item.name == user.name || item.email == user.email)
