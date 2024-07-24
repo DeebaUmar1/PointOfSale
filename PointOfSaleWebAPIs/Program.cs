@@ -1,12 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using PointOfSale;
 using PointOfSaleWebAPIs;
-using PointOfSaleWebAPIs.Middlewares;
 using log4net;
 using log4net.Config;
 using System.IO;
 using System.Reflection;
+using PointOfSaleWebAPIs.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,10 +42,11 @@ if (app.Environment.IsDevelopment())
 }
 
 
-//app.UseMiddleware<BasicAuthMiddleware>();
-app.UseMiddleware<BearerTokenMiddleware>();
+app.UseMiddleware<BasicAuthMiddleware>();
+//app.UseMiddleware<BearerTokenMiddleware>();
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

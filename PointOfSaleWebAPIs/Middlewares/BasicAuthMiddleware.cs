@@ -7,7 +7,7 @@ namespace PointOfSaleWebAPIs.Middlewares
     public class BasicAuthMiddleware
     {
         private readonly RequestDelegate _next;
-
+        private readonly string trainingKey = "DemoTrainingKey";
         public BasicAuthMiddleware(RequestDelegate next)
         {
             _next = next;
@@ -15,9 +15,10 @@ namespace PointOfSaleWebAPIs.Middlewares
 
         public async Task InvokeAsync(HttpContext context, POSDbContext dbContext)
         {
-            if (!context.Request.Headers.ContainsKey("Authorization"))
+            if (!context.Request.Headers.TryGetValue("AuthKey", out var _key) || (_key != trainingKey))
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await _next(context);
                 return;
             }
 

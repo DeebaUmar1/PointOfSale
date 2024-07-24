@@ -20,7 +20,7 @@ namespace PointOfSaleWebAPIs.Controllers
         }
 
         
-        // in web api / web proje cts actions are asynchronous
+        // in web api / web projects actions are asynchronous
         // web api endpoints returns response not views
         [HttpGet]
         public async Task<ActionResult<List<Product>>> GetProducts()

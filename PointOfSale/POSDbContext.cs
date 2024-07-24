@@ -14,7 +14,8 @@ namespace PointOfSale
         {
 
         }
-
+        public DbSet<User> Users { get; set; }
+        public DbSet<SaleProducts> SaleProducts { get; set; }
         public DbSet<Product> Products { get; set; }
         public static void SeedData(POSDbContext context)
         {
@@ -27,8 +28,7 @@ namespace PointOfSale
                 context.SaveChanges();
             }
         }
-        public DbSet<User> Users { get; set; }
-        public DbSet<SaleProducts> SaleProducts { get; set; } 
+       
 
     }
 }
