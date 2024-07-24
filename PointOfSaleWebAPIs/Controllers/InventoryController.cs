@@ -3,39 +3,64 @@ using Microsoft.AspNetCore.Mvc;
 using PointOfSale.Data;
 using PointOfSale.Services;
 using PointOfSale;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PointOfSaleWebAPIs.Controllers
 {
     
     [Route("api/[controller]")]
     [ApiController]
+
+    [Authorize]
     public class InventoryController : ControllerBase
     {
+        private readonly ILogger<InventoryController> _logger;
         private readonly POSDbContext _context;
 
-        public InventoryController(POSDbContext context)
+        public InventoryController(POSDbContext context, ILogger<InventoryController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [HttpPost("SeedProducts")]
         public IActionResult SeedProducts()
         {
-            EFInventory.SeedProducts(_context);
-            return Ok("Products seeded");
+            try
+            {
+                EFInventory.SeedProducts(_context);
+                _logger.LogInformation("Products added!!");
+                return Ok("Products seeded");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error Message: {ex.Message}");
+                return BadRequest(ex.Message);
+            }
+           
         }
 
         [HttpPost("AddProduct")]
         public IActionResult AddProduct(Product product)
         {
-            bool added = EFInventory.AddProductAPI(_context, product);
-            if (added)
+            try
             {
-                return Ok("Product added");
+                bool added = EFInventory.AddProductAPI(_context, product);
+                if (added)
+                {
+                    _logger.LogInformation($"Product added!!{product}");
+                    return Ok("Product added");
+                }
+                else
+                {
+                    _logger.LogWarning("All fields are required");
+                    return BadRequest("All fields are required");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest("All fields are required");
+                _logger.LogError($"Error Message: {ex.Message}");
+                return BadRequest(ex.Message);
             }
             
         }
@@ -43,32 +68,60 @@ namespace PointOfSaleWebAPIs.Controllers
         [HttpGet("ViewProducts")]
         public IActionResult ViewProducts()
         {
-            var products = _context.Products.ToList();
-            return Ok(products);
+            try
+            {
+                var products = _context.Products.ToList();
+                _logger.LogInformation($"{products.Count} products");
+                return Ok(products);
+            }
+            catch(Exception ex) 
+            {
+                _logger.LogError($"Error Message: {ex.Message}");
+                return BadRequest(ex.Message);
+            }
+         
         }
 
         [HttpDelete("RemoveProduct/{id}")]
         public IActionResult RemoveProduct(int id)
         {
-            EFInventory.RemoveProduct(_context, id);
-            return Ok("Product removed");
+            try
+            {
+                EFInventory.RemoveProduct(_context, id);
+                _logger.LogInformation($"Product with {id} is removed");
+                return Ok("Product removed");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error Message: {ex.Message}");
+                return BadRequest(ex.Message);
+            }
+           
         }
 
         [HttpPut("UpdateProduct")]
         public IActionResult UpdateProduct(Product product)
         {
-            bool updated = EFInventory.UpdateAPI(_context,product);
-
-            if (updated)
+            try
             {
+                bool updated = EFInventory.UpdateAPI(_context, product);
 
-                return Ok("Product updated");
+                if (updated)
+                {
+                    _logger.LogInformation("Product has been updated!");
+                    return Ok("Product updated");
+                }
+                else
+                {
+                    _logger.LogWarning("Product has not been updated");
+                    return BadRequest();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest();
+                _logger.LogError($"Error Message: {ex.Message}");
+                return BadRequest(ex.Message);
             }
-          
         }
 
         /* [HttpPut("UpdateStock/{id}")]

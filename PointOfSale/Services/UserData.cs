@@ -39,10 +39,21 @@ namespace PointOfSale.Services
             return Users;
         }
 
-        public static void Add(User user)
+        public static bool Add(User user)
         {
+
+           
+            foreach (var item in Users)
+            {
+                if (item.name == user.name || item.email == user.email)
+                {
+                    return false;
+                }
+            }
+
             user.Id = _userIdCounter++;
             Users.Add(user);
+            return true;
         }
         public static string Search(string name, string password)
         {

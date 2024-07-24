@@ -1,20 +1,39 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PointOfSale;
+using PointOfSaleWebAPIs;
+using PointOfSaleWebAPIs.Middlewares;
+using log4net;
+using log4net.Config;
+using System.IO;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Configure log4net
+var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
+XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
 
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddLog4Net();
+
+// Add services to the container.
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-
-// Configure DbContext with In-Memory Database
+builder.Services.AddSingleton<TokenService>(); // Register TokenService
 builder.Services.AddDbContext<POSDbContext>(options =>
     options.UseInMemoryDatabase("POSDatabase"));
+
 var app = builder.Build();
+
+// Seed data
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<POSDbContext>();
+    POSDbContext.SeedData(dbContext);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -23,6 +42,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+//app.UseMiddleware<BearerTokenMiddleware>();
+app.UseMiddleware<BasicAuthMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

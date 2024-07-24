@@ -5,12 +5,28 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace PointOfSale.Services
 {
     public static class Authentication
     {
-       
+        public static void LoginAPI(POSDbContext context, string name, string password)
+        {
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(password))
+            {
+                Console.WriteLine("All fields are required.");
+                Login(context);
+            }
+            else
+            {
+                string role;
+
+
+                role = EFUserData.Search(context, name, password);
+
+            }
+        }
     
         public static void Login(POSDbContext context)
         {
@@ -128,18 +144,32 @@ namespace PointOfSale.Services
 #pragma warning restore CS8601 // Possible null reference assignment.
                 try
                 {
+                    bool added = false;
                     if (context == null)
                     {
-                        UserData.Add(user);
+                        added = UserData.Add(user);
                      
                     }
                     else
                     {
-                        EFUserData.Add(context, user);
+                        added = EFUserData.Add(context, user);
+                      
                     }
-                    Console.WriteLine("User registered successfully with default role 'Cashier'.\"");
-                    Console.WriteLine("Press any key to proceed..");
-                    Console.ReadKey();
+                    if (added)
+                    {
+
+
+                        Console.WriteLine("User registered successfully with default role 'Cashier'.\"");
+                        Console.WriteLine("Press any key to proceed..");
+                        Console.ReadKey();
+                    }
+                    else
+                    {
+                        Console.WriteLine("User already exists!");
+                        Console.WriteLine("Register again!");
+                        Console.ReadKey();
+                        return;
+                    }
                 }
                 catch (Exception ex)
                 {

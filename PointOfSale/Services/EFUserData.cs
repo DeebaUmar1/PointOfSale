@@ -1,4 +1,5 @@
-﻿using PointOfSale.Data;
+﻿using AutoMapper.Internal;
+using PointOfSale.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace PointOfSale.Services
 {
     public static class EFUserData
     {
+        
         public static void SeedData(POSDbContext context)
         {
             if (!context.Users.Any())
@@ -43,13 +45,25 @@ namespace PointOfSale.Services
             return context.Users.ToList();
         }
 
-        public static void Add(POSDbContext context, User user)
+        public static bool Add(POSDbContext context, User user)
         {
-            user.Id = context.Users.Max(u => u.Id) + 1;
-            context.Users.Add(user);
-            context.SaveChanges();
+            var users = context.Users.ToList();
+            foreach (var item in users)
+            {
+                if(item.name == user.name || item.email == user.email)
+                {
+                    return false;
+                }
+            }
+           
+                user.Id = context.Users.Max(u => u.Id) + 1;
+                context.Users.Add(user);
+                context.SaveChanges();
+                return true;
+            
         }
 
+       
         public static string Search(POSDbContext context, string name, string password)
         {
             var searchResults = context.Users.FirstOrDefault(user => user.name == name);

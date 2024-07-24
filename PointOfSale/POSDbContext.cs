@@ -16,6 +16,17 @@ namespace PointOfSale
         }
 
         public DbSet<Product> Products { get; set; }
+        public static void SeedData(POSDbContext context)
+        {
+            if (!context.Users.Any())
+            {
+                context.Users.AddRange(
+                    new User { Id = 1, name = "admin", email = "email", password = "adminpass", role = "Admin" }
+
+                );
+                context.SaveChanges();
+            }
+        }
         public DbSet<User> Users { get; set; }
         public DbSet<SaleProducts> SaleProducts { get; set; } 
 
